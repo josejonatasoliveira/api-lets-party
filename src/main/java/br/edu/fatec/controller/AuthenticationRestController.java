@@ -41,7 +41,7 @@ import br.edu.fatec.security.Authority;
 import br.edu.fatec.security.AuthorityName;
 import br.edu.fatec.service.JwtAuthenticationResponse;
 
-@RestController
+@RestController("/app")
 @Controller
 public class AuthenticationRestController {
 	
