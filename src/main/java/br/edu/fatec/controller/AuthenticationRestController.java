@@ -1,8 +1,10 @@
 package br.edu.fatec.controller;
 
 
+import java.net.URI;
 import java.util.Objects;
 import javax.servlet.http.HttpServletRequest;
+import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -16,22 +18,35 @@ import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
-import br.edu.fatec.jwt.JwtAuthenticationRequest;
+import br.edu.fatec.exception.AppException;
 import br.edu.fatec.jwt.JwtTokenUtil;
 import br.edu.fatec.jwt.JwtUser;
 import br.edu.fatec.model.Usuario;
+import br.edu.fatec.repository.AuthorityRepository;
+import br.edu.fatec.repository.UsuarioRepository;
+import br.edu.fatec.request.ApiResponse;
+import br.edu.fatec.request.JwtAuthenticationRequest;
+import br.edu.fatec.request.SignUpRequest;
+import br.edu.fatec.security.Authority;
+import br.edu.fatec.security.AuthorityName;
 import br.edu.fatec.service.JwtAuthenticationResponse;
 
 @RestController
 @Controller
 public class AuthenticationRestController {
+	
+	@Autowired
+	private PasswordEncoder passwordEncoder;
 
     @Value("Authorization")
     private String tokenHeader;
@@ -41,6 +56,12 @@ public class AuthenticationRestController {
 
     @Autowired
     private JwtTokenUtil jwtTokenUtil;
+    
+    @Autowired
+    private UsuarioRepository usuarioRepository;
+    
+    @Autowired
+    private AuthorityRepository authorityRepository;
 
 
     @Autowired
@@ -74,7 +95,7 @@ public class AuthenticationRestController {
             return ResponseEntity.badRequest().body(null);
         }
     }
-
+    
     @ExceptionHandler({AuthenticationException.class})
     public ResponseEntity<String> handleAuthenticationException(AuthenticationException e) {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
@@ -95,4 +116,44 @@ public class AuthenticationRestController {
             throw new AuthenticationException("Bad credentials!", e);
         }
     }
+    
+    @SuppressWarnings("unchecked")
+	@PostMapping("/signup")
+    public ResponseEntity<?> registerUser(@Valid @RequestBody Usuario request){
+    	if (usuarioRepository.existsByNome(request.getNome())){
+    		 return new ResponseEntity(new ApiResponse(false, "Username is already taken!"),
+                     HttpStatus.BAD_REQUEST);
+    	}
+    	
+    	if(usuarioRepository.existsByEmail(request.getEmail())) {
+            return new ResponseEntity(new ApiResponse(false, "Email Address already in use!"),
+                    HttpStatus.BAD_REQUEST);
+        }
+    	
+    	Usuario usuario = new Usuario();
+    	usuario.setId(request.getId());
+    	usuario.setNome(request.getNome());
+    	usuario.setSobrenome(request.getSobrenome());
+    	usuario.setEmail(request.getEmail());
+    	usuario.setSenha(request.getSenha());
+    	usuario.setEnabled(request.getEnabled());
+    	usuario.setLastPasswordResetDate(request.getLastPasswordResetDate());
+    	usuario.setSenha(passwordEncoder.encode(usuario.getSenha()));
+    	
+    	
+    	Authority userAuthority = authorityRepository.findByName(AuthorityName.ROLE_ADMIN)
+    			.orElseThrow(() -> new AppException("Authority nao gravado!"));
+    	
+    	Usuario user = usuarioRepository.save(usuario);
+    	
+    	URI location = ServletUriComponentsBuilder
+                .fromCurrentContextPath().path("/signup")
+                .buildAndExpand(user.getNome()).toUri();
+
+        return ResponseEntity.created(location).body(new ApiResponse(true, "User registered successfully"));
+    	
+    	
+    }
+    
+    
 }

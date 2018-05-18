@@ -75,6 +75,7 @@ public class Usuario {
     private Date lastPasswordResetDate;
 	
 
+
 	public Date getLastPasswordResetDate() {
 		return lastPasswordResetDate;
 	}
