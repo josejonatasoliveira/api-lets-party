@@ -1,9 +1,7 @@
 package br.edu.fatec.model;
 
 import java.util.Date;
-import java.util.List;
 import java.util.Set;
-
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -18,7 +16,9 @@ import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
+import javax.persistence.*;
 
 import br.edu.fatec.security.Authority;
 
@@ -40,6 +40,7 @@ public class Usuario {
 	@Column(name = "USU_DATANASC")
 	private Date dataNasc;
 	
+	@NotBlank
 	@Column(name = "USU_SENHA")
 	private String senha;
 	
@@ -62,7 +63,10 @@ public class Usuario {
 	@OneToMany(mappedBy = "usuario")
 	private Set<Evento> eventos;
 	
-    @ManyToMany(fetch = FetchType.EAGER)
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(name = "usu_usuario_authorities",
+    joinColumns = @JoinColumn(name = "usuarios_usu_id"),
+    inverseJoinColumns = @JoinColumn(name = "authorities_id"))
     private Set<Authority> authorities;
     
     @Column(name = "ENABLED")

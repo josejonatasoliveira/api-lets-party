@@ -6,6 +6,8 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import br.edu.fatec.model.Usuario;
@@ -25,6 +27,14 @@ public class UsuarioService {
 				throw new Exception("CPF invalido!");
 			throw new Exception("Usuario ja existe!");
 		}
+	}
+	
+	public UserDetails loadUser(String nameUser) {
+		Usuario user = (Usuario) repository.findByNome(nameUser);
+		if(user == null) {
+			throw new UsernameNotFoundException(nameUser);
+		}
+		return (UserDetails) user;
 	}
 	
 	

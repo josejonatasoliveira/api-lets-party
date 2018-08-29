@@ -24,7 +24,7 @@ import br.edu.fatec.model.Usuario;
 public class Authority {
 
     @Id
-    @Column(name = "ID")
+    @Column(name = "AUT_ID")
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "authority_seq")
     @SequenceGenerator(name = "authority_seq", sequenceName = "authority_seq", allocationSize = 1)
     private Long id;
@@ -34,8 +34,8 @@ public class Authority {
     @Enumerated(EnumType.STRING)
     private AuthorityName name;
 
-    @ManyToMany(mappedBy = "authorities", fetch = FetchType.LAZY)
-    private Set<Usuario> usuarios;
+//    @ManyToMany(mappedBy = "authorities", fetch = FetchType.LAZY)
+//    private Set<Usuario> usuarios;
 
     public Long getId() {
         return id;
@@ -53,11 +53,11 @@ public class Authority {
         this.name = name;
     }
 
-    public Set<Usuario> getUsuarios() {
-        return usuarios;
-    }
-
-    public void setUsuarios(Set<Usuario> usuarios) {
-        this.usuarios = usuarios;
-    }
+//    public Set<Usuario> getUsuarios() {
+//        return usuarios;
+//    }
+//
+//    public void setUsuarios(Set<Usuario> usuarios) {
+//        this.usuarios = usuarios;
+//    }
 }

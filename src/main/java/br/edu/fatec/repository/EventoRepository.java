@@ -16,6 +16,9 @@ public interface EventoRepository extends JpaRepository<Evento, Long>{
 	List<Evento> findByNome(String nome);
 	
 	@Query("SELECT e FROM Evento e JOIN e.endereco ed WHERE ed.nome like %?1%")
-	List<Evento> fidByEndereco(String nome);
+	List<Evento> findByEndereco(String nome);
+	
+	@Query("SELECT e FROM Evento e JOIN e.endereco ed WHERE ed.cidade like %?1%")
+	List<Evento> findByCidade(String nome);
 
 }
